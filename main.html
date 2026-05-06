@@ -2,176 +2,157 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DocOnDemand | Solicitar Servicio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocOnDemand | Sistema de Gestión Médica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100%; z-index: 1; }
         
-        /* Efecto Uber: Panel Flotante Inferior */
-        .uber-panel {
-            z-index: 1000;
-            background: white;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
-            transition: transform 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        /* Sidebar Estilizado */
+        .sidebar {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+        }
+        .sidebar.closed { transform: translateX(-100%); }
+
+        /* Overlay para cerrar el menú */
+        .overlay {
+            display: none;
+            z-index: 1999;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+        }
+        .overlay.active { display: block; }
+
+        .status-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            font-weight: 800;
         }
 
-        .category-card {
-            border: 2px solid transparent;
-            transition: all 0.2s;
+        .doctor-card {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
         }
-
-        .category-card.active {
-            border-color: #000;
-            background-color: #f8fafc;
-        }
-
-        .search-bar {
-            z-index: 1001;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        /* Estilo de los marcadores en el mapa */
-        .doctor-marker {
-            background: black;
-            color: white;
-            padding: 8px;
-            border-radius: 50%;
-            border: 2px solid white;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
+        .doctor-card:hover { background: #f8fafc; }
     </style>
 </head>
-<body class="bg-slate-100">
+<body class="bg-slate-50">
 
-    <div class="absolute top-10 left-0 right-0 px-4 flex flex-col items-center pointer-events-none">
-        <div class="search-bar w-full max-w-lg bg-white rounded-xl p-4 flex items-center space-x-4 pointer-events-auto cursor-pointer">
-            <div class="w-2 h-2 bg-black rounded-full ml-2"></div>
-            <span class="flex-1 text-slate-500 font-medium text-sm">¿A dónde enviamos al doctor?</span>
-            <div class="h-6 w-px bg-slate-200"></div>
-            <i class="fas fa-clock text-slate-400 text-sm px-2"></i>
+    <div id="overlay" class="overlay fixed inset-0" onclick="toggleMenu()"></div>
+
+    <div id="sidebar" class="sidebar closed fixed top-0 left-0 bottom-0 w-80 bg-white shadow-2xl flex flex-col">
+        <div class="p-8 bg-slate-900 text-white">
+            <div class="flex items-center space-x-4 mb-4">
+                <img src="https://i.pravatar.cc/150?u=angel" class="w-14 h-14 rounded-2xl border-2 border-blue-500">
+                <div>
+                    <h4 class="font-bold">Angel Leonel</h4>
+                    <p class="text-xs text-slate-400">Usuario Premium</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-1 rounded font-bold italic">Billetera: $2,450.00 MXN</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2">
+            <p class="text-[10px] font-bold text-slate-400 uppercase px-4 py-2 tracking-widest">General</p>
+            <a href="#" class="flex items-center space-x-3 p-4 hover:bg-slate-50 rounded-2xl text-slate-600 transition-colors">
+                <i class="fas fa-history w-5"></i>
+                <span class="text-sm font-semibold">Historial de Consultas</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 p-4 hover:bg-slate-50 rounded-2xl text-slate-600 transition-colors">
+                <i class="fas fa-wallet w-5"></i>
+                <span class="text-sm font-semibold">Métodos de Pago</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 p-4 hover:bg-slate-50 rounded-2xl text-slate-600 transition-colors">
+                <i class="fas fa-shield-alt w-5"></i>
+                <span class="text-sm font-semibold">Seguro Médico</span>
+            </a>
+
+            <p class="text-[10px] font-bold text-slate-400 uppercase px-4 py-2 mt-4 tracking-widest">Configuración</p>
+            <a href="#" class="flex items-center space-x-3 p-4 hover:bg-slate-50 rounded-2xl text-slate-600 transition-colors">
+                <i class="fas fa-cog w-5"></i>
+                <span class="text-sm font-semibold">Ajustes de Cuenta</span>
+            </a>
+            <a href="index.html" class="flex items-center space-x-3 p-4 hover:bg-red-50 rounded-2xl text-red-500 transition-colors">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span class="text-sm font-semibold">Cerrar Sesión</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="absolute top-6 left-6 z-[1001] flex space-x-4">
+        <button onclick="toggleMenu()" class="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-slate-800 hover:bg-slate-50">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+        <div class="bg-white px-6 py-2 rounded-2xl shadow-xl flex items-center space-x-4">
+            <div class="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">Médicos Online: 14</span>
         </div>
     </div>
 
-    <div class="absolute top-28 right-4 flex flex-col space-y-2 z-[1001]">
-        <button onclick="centerMap()" class="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-700 active:bg-slate-100">
-            <i class="fas fa-location-arrow"></i>
-        </button>
+    <div class="absolute top-24 left-6 w-96 bg-white rounded-[2rem] shadow-2xl z-[1001] flex flex-col max-h-[70vh] overflow-hidden">
+        <div class="p-6 border-b">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-3.5 text-slate-400"></i>
+                <input type="text" placeholder="Buscar por nombre o síntoma..." class="w-full pl-11 pr-4 py-3 bg-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm">
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar" id="doc-list">
+            <div class="doctor-card p-5 cursor-pointer" onclick="showBudget()">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="status-badge bg-green-100 text-green-700">Disponible</span>
+                    <span class="text-[10px] font-bold text-slate-400">$450 consulta</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <img src="https://i.pravatar.cc/100?u=9" class="w-12 h-12 rounded-xl">
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-800">Dr. Javier Méndez</h5>
+                        <p class="text-[11px] text-slate-500">Traumatología • ⭐ 4.9 (120 reseñas)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doctor-card p-5 opacity-60">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="status-badge bg-orange-100 text-orange-700">En Consulta</span>
+                    <span class="text-[10px] font-bold text-slate-400">Libre en 15m</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <img src="https://i.pravatar.cc/100?u=12" class="w-12 h-12 rounded-xl grayscale">
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-800">Dra. Claudia Ruiz</h5>
+                        <p class="text-[11px] text-slate-500">Ginecología • ⭐ 4.7 (85 reseñas)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="map"></div>
 
-    <div class="uber-panel absolute bottom-0 left-0 right-0 max-w-2xl mx-auto p-6 pb-8">
-        <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-
-        <h3 class="text-xl font-bold text-slate-900 mb-4">Elige un servicio</h3>
-
-        <div class="grid grid-cols-3 gap-3 mb-8">
-            <div onclick="selectService(this, 350)" class="category-card active p-4 rounded-2xl flex flex-col items-center text-center cursor-pointer">
-                <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" class="w-12 h-12 mb-2">
-                <span class="text-xs font-bold text-slate-800">Doc Básico</span>
-                <span class="text-[10px] text-slate-500">5 min</span>
-            </div>
-            <div onclick="selectService(this, 600)" class="category-card p-4 rounded-2xl flex flex-col items-center text-center cursor-pointer">
-                <img src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" class="w-12 h-12 mb-2">
-                <span class="text-xs font-bold text-slate-800">Especialista</span>
-                <span class="text-[10px] text-slate-500">12 min</span>
-            </div>
-            <div onclick="selectService(this, 1200)" class="category-card p-4 rounded-2xl flex flex-col items-center text-center cursor-pointer">
-                <img src="https://cdn-icons-png.flaticon.com/512/883/883356.png" class="w-12 h-12 mb-2">
-                <span class="text-xs font-bold text-slate-800">Urgencia XL</span>
-                <span class="text-[10px] text-slate-500">3 min</span>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-6">
-            <div class="flex items-center space-x-3">
-                <i class="fab fa-cc-visa text-blue-800 text-xl"></i>
-                <span class="font-bold text-slate-700 text-sm">•••• 4242</span>
-            </div>
-            <span id="price-tag" class="text-lg font-bold text-slate-900">$350.00 MXN</span>
-        </div>
-
-        <button onclick="requestDoctor()" class="w-full bg-black text-white py-5 rounded-2xl font-bold text-lg shadow-2xl transition-all active:scale-95">
-            Solicitar DocOnDemand
-        </button>
-    </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Inicializar Mapa
-        const map = L.map('map', { zoomControl: false }).setView([19.4326, -99.1332], 15);
+        // Configuración de Mapa
+        const map = L.map('map', { zoomControl: false }).setView([19.4326, -99.1332], 14);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-        // Capa de Mapa estilo "Dark/Clean" para resaltar doctores
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '©OpenStreetMap'
-        }).addTo(map);
-
-        // Marcador del Paciente (Tú)
-        const userIcon = L.divIcon({
-            className: 'user-marker',
-            html: `<div style="background: #2563eb; width: 20px; height: 20px; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 20px rgba(37,99,235,0.5);"></div>`,
-            iconSize: [20, 20]
-        });
-        L.marker([19.4326, -99.1332], { icon: userIcon }).addTo(map);
-
-        // Simular Doctores moviéndose como coches de Uber
-        const docs = [
-            { id: 1, pos: [19.435, -99.138] },
-            { id: 2, pos: [19.429, -99.130] },
-            { id: 3, pos: [19.438, -99.135] }
-        ];
-
-        const docMarkers = docs.map(d => {
-            const icon = L.divIcon({
-                className: 'doctor-marker',
-                html: `<i class="fas fa-stethoscope text-[12px]"></i>`,
-                iconSize: [30, 30]
-            });
-            return L.marker(d.pos, { icon }).addTo(map);
-        });
-
-        // Funciones de la App
-        function selectService(element, price) {
-            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-            document.getElementById('price-tag').innerText = `$${price.toFixed(2)} MXN`;
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('closed');
+            document.getElementById('overlay').classList.toggle('active');
         }
 
-        function centerMap() {
-            map.flyTo([19.4326, -99.1332], 16);
+        function showBudget() {
+            const confirm = window.confirm("Presupuesto Estimado:\n\n- Consulta Base: $450.00\n- Cargo por servicio: $50.00\n\n¿Deseas solicitar este médico?");
+            if(confirm) alert("Solicitud enviada. El Dr. Méndez aceptó tu consulta.");
         }
-
-        function requestDoctor() {
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> Buscando médico cercano...`;
-            btn.classList.replace('bg-black', 'bg-slate-700');
-
-            setTimeout(() => {
-                alert("¡Médico encontrado! El Dr. Silva está en camino en un Honda Civic Blanco. Llegada en 4 min.");
-                btn.innerHTML = "Cancelar Servicio";
-                btn.classList.replace('bg-slate-700', 'bg-red-600');
-            }, 3000);
-        }
-
-        // Simular movimiento suave
-        setInterval(() => {
-            docMarkers.forEach(m => {
-                const pos = m.getLatLng();
-                m.setLatLng([
-                    pos.lat + (Math.random() - 0.5) * 0.001,
-                    pos.lng + (Math.random() - 0.5) * 0.001
-                ]);
-            });
-        }, 2000);
     </script>
 </body>
 </html>
