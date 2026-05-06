@@ -132,18 +132,20 @@
             }, 400);
         }
 
-        function simulateAction(msg) {
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-circle-notch animate-spin mr-2"></i> ${msg}`;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                alert("Simulación de servidor: Usuario validado correctamente.");
-            }, 2000);
-        }
+function simulateAction(msg) {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    // Evitar múltiples clics
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-circle-notch animate-spin mr-2"></i> ${msg}`;
+    
+    // Simulamos una carga de 1.5 segundos y luego entramos
+    setTimeout(() => {
+        // Esto redirige a la página principal del mapa
+        window.location.href = "main.html";
+    }, 1500);
+}
     </script>
 </body>
 </html>
