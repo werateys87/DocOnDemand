@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocOnDemand | Registro Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-field {
+            transition: all 0.3s ease;
+            border: 1.5px solid #F1F5F9;
+        }
+        .input-field:focus {
+            border-color: #3B82F6;
+            background: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+        }
+        .step-animation { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] min-h-screen flex items-center justify-center p-6">
+
+    <div class="glass-card p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] w-full max-w-lg">
+        
+        <div class="mb-8">
+            <a href="index.html" class="text-slate-400 hover:text-blue-600 transition-colors text-sm font-semibold">
+                <i class="fas fa-arrow-left mr-2"></i> Volver al inicio
+            </a>
+            <h1 id="reg-title" class="text-3xl font-bold text-slate-900 mt-4 tracking-tight">Crear Cuenta</h1>
+            <p id="reg-subtitle" class="text-slate-500 font-medium">Únete a la red médica más avanzada.</p>
+        </div>
+
+        <!-- Selector de Tipo de Cuenta -->
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl mb-8">
+            <button onclick="updateFields('paciente')" id="tab-p" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all bg-white text-blue-600 shadow-sm">Paciente</button>
+            <button onclick="updateFields('doctor')" id="tab-d" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all text-slate-500">Médico Especialista</button>
+        </div>
+
+        <form onsubmit="handleRegister(event)" class="space-y-4">
+            <!-- Campos Universales -->
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" placeholder="Nombre" required class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700">
+                <input type="text" placeholder="Apellido" required class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700">
+            </div>
+            
+            <input type="text" placeholder="Nombre de usuario" required class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700">
+            <input type="email" placeholder="Correo electrónico institucional" required class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700">
+
+            <!-- SECCIÓN DINÁMICA: DOCTOR -->
+            <div id="doctor-section" class="hidden space-y-4 pt-4 border-t border-slate-100 step-animation">
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-widest">Validación Profesional</p>
+                
+                <div class="relative">
+                    <select class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700 appearance-none">
+                        <option value="">Especialidad Médica</option>
+                        <option value="general">Médico General</option>
+                        <option value="pediatria">Pediatría</option>
+                        <option value="cardio">Cardiología</option>
+                        <option value="neuro">Neurología</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-5 top-5 text-slate-400"></i>
+                </div>
+
+                <input type="text" placeholder="Número de Cédula Profesional (ID)" class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700">
+                
+                <!-- Verificación de Identidad Simulada -->
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-blue-300 transition-colors cursor-pointer bg-slate-50">
+                    <i class="fas fa-id-card text-2xl text-slate-400 mb-2"></i>
+                    <p class="text-xs text-slate-500 font-medium">Subir foto de Identificación Oficial o Título (PDF/JPG)</p>
+                </div>
+            </div>
+
+            <!-- Seguridad -->
+            <div class="pt-4">
+                <input type="password" placeholder="Contraseña segura" required class="input-field w-full px-5 py-4 bg-slate-50 rounded-2xl outline-none text-slate-700">
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-100 transition-all transform active:scale-[0.98]">
+                Finalizar Registro
+            </button>
+        </form>
+    </div>
+
+    <script>
+        let currentRole = 'paciente';
+
+        function updateFields(role) {
+            currentRole = role;
+            const docSection = document.getElementById('doctor-section');
+            const tabP = document.getElementById('tab-p');
+            const tabD = document.getElementById('tab-d');
+            const sub = document.getElementById('reg-subtitle');
+
+            if (role === 'doctor') {
+                docSection.classList.remove('hidden');
+                tabD.className = "flex-1 py-3 text-sm font-bold rounded-xl transition-all bg-white text-blue-600 shadow-sm";
+                tabP.className = "flex-1 py-3 text-sm font-bold rounded-xl transition-all text-slate-500";
+                sub.innerText = "Verifica tu identidad para empezar a atender.";
+            } else {
+                docSection.classList.add('hidden');
+                tabP.className = "flex-1 py-3 text-sm font-bold rounded-xl transition-all bg-white text-blue-600 shadow-sm";
+                tabD.className = "flex-1 py-3 text-sm font-bold rounded-xl transition-all text-slate-500";
+                sub.innerText = "Únete a la red médica más avanzada.";
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Procesando datos...';
+            
+            setTimeout(() => {
+                alert(`¡Cuenta de ${currentRole.toUpperCase()} creada con éxito!\n\nEn un entorno real, ahora verificaríamos tu cédula profesional.`);
+                window.location.href = "index.html"; // Regresar al login
+            }, 2500);
+        }
+
+        // Detectar si venía de la opción "Doctor" en la página anterior
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('role') === 'doctor') updateFields('doctor');
+        }
+    </script>
+</body>
+</html>
