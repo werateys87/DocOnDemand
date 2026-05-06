@@ -119,19 +119,16 @@
         }
 
         function redirectToRegister() {
-            // Animación de salida antes de cambiar de página
-            document.querySelector('.glass-card').style.opacity = '0';
-            document.querySelector('.glass-card').style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                if (currentRole === 'paciente') {
-                    window.location.href = "registerClient.html";
-                } else {
-                    window.location.href = "registerDoctor.html";
-                }
-            }, 400);
-        }
-
+    // Animación de salida (opcional, para estilo)
+    document.querySelector('.glass-card').style.opacity = '0';
+    document.querySelector('.glass-card').style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+        // Redirige a register.html pasando el rol actual (paciente o doctor)
+        // Esto permite que la página de registro sepa qué campos mostrar
+        window.location.href = `register.html?role=${currentRole}`;
+    }, 400);
+}
 function simulateAction(msg) {
     const btn = event.target;
     const originalText = btn.innerHTML;
